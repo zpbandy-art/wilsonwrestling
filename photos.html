@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Photos | Wilson Memorial Wrestling</title>
+<meta name="description" content="Wilson Memorial Hornets varsity wrestling: schedule, results, and roster.">
+<meta name="theme-color" content="#233B32">
+<meta property="og:title" content="Photos | Wilson Memorial Wrestling">
+<meta property="og:description" content="Wilson Memorial Hornets varsity wrestling: schedule, results, and roster.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://zpbandy-art.github.io/wilsonwrestling/preview.jpg?v=2">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="favicon.png?v=2">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=11">
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <a class="brand" href="./"><img src="logos/hornet.png?v=2" alt=""><span>Wilson Memorial Wrestling</span></a>
+    <button class="icon-btn" id="themeBtn" aria-label="Toggle dark mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+  </div>
+  <nav class="tabs"><div class="inner"><a href="./">Home</a><a href="schedule.html">Schedule</a><a href="roster.html">Roster</a><a href="photos.html" id="navPhotos" hidden class="on">Photos</a></div></nav>
+</header>
+<main id="main">
+
+<div id="content"><p class="empty">Loading…</p></div>
+<dialog id="lb" class="lb" aria-label="Photo viewer">
+  <button class="lb-x" aria-label="Close">&times;</button>
+  <button class="lb-nav lb-prev" aria-label="Previous">&lsaquo;</button>
+  <img id="lbImg" alt="">
+  <button class="lb-nav lb-next" aria-label="Next">&rsaquo;</button>
+  <div class="lb-cap"><span id="lbCap"></span><span id="lbCount"></span></div>
+</dialog>
+
+</main>
+<footer class="footer" id="footer"></footer>
+<script src="shared.js?v=11"></script>
+<script>
+const VERSION = "2.0";
+setFooter(VERSION);
+
+const el = document.getElementById("content");
+if (!SITE.photosEnabled) {
+  el.innerHTML = '<p class="empty">Photos are coming soon.</p>';
+} else loadAll().then(data => {
+  const groups = data.events.filter(e => photosFor(data, e.id).length).reverse();
+  const loose = data.photos.filter(p => p.file && !data.eventById[p.event]);
+  if (!groups.length && !loose.length) { el.innerHTML = '<p class="empty">Photos are coming soon.</p>'; return; }
+  const all = [];
+  const grid = list => '<div class="pgrid">' + list.map(p => {
+    const i = all.push(p) - 1;
+    return `<button class="pthumb" data-i="${i}" aria-label="Open photo"><img loading="lazy" src="photos/thumbs/${encodeURIComponent(p.file)}" alt="${esc(p.caption)}"></button>`;
+  }).join("") + "</div>";
+  let h = "";
+  for (const ev of groups) {
+    const list = photosFor(data, ev.id);
+    h += `<section class="pgroup" id="ev${esc(ev.id)}"><h2 class="sec-title">${esc(eventTitle(data, ev))}</h2>
+      <div class="muted psub">${esc(fmtDateRange(ev))} · ${list.length} photo${list.length > 1 ? "s" : ""}</div>${grid(list)}</section>`;
+  }
+  if (loose.length) h += `<section class="pgroup"><h2 class="sec-title">More Photos</h2>${grid(loose)}</section>`;
+  el.innerHTML = h;
+  if (location.hash) { const t = document.querySelector(location.hash); if (t) t.scrollIntoView(); }
+
+  // Lightbox
+  const lb = document.getElementById("lb"), img = document.getElementById("lbImg");
+  let cur = 0;
+  function show(i) {
+    cur = (i + all.length) % all.length;
+    const p = all[cur];
+    img.src = "photos/" + encodeURIComponent(p.file);
+    img.alt = p.caption || "";
+    document.getElementById("lbCap").textContent = p.caption || "";
+    document.getElementById("lbCount").textContent = `${cur + 1} / ${all.length}`;
+  }
+  el.addEventListener("click", e => { const b = e.target.closest(".pthumb"); if (b) { show(+b.dataset.i); lb.showModal(); } });
+  lb.querySelector(".lb-x").onclick = () => lb.close();
+  lb.querySelector(".lb-prev").onclick = () => show(cur - 1);
+  lb.querySelector(".lb-next").onclick = () => show(cur + 1);
+  lb.addEventListener("click", e => { if (e.target === lb) lb.close(); });
+  document.addEventListener("keydown", e => {
+    if (!lb.open) return;
+    if (e.key === "ArrowLeft") show(cur - 1);
+    if (e.key === "ArrowRight") show(cur + 1);
+  });
+  let x0 = null;
+  lb.addEventListener("touchstart", e => { x0 = e.touches[0].clientX; }, { passive: true });
+  lb.addEventListener("touchend", e => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0; x0 = null;
+    if (Math.abs(dx) > 40) show(cur + (dx < 0 ? 1 : -1));
+  });
+}).catch(e => showError(el, e));
+
+</script>
+</body>
+</html>

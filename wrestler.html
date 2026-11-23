@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=8">
+<link rel="stylesheet" href="styles.css?v=11">
 </head>
 <body>
 <header class="top">
@@ -24,49 +24,88 @@
     <a class="brand" href="./"><img src="logos/hornet.png?v=2" alt=""><span>Wilson Memorial Wrestling</span></a>
     <button class="icon-btn" id="themeBtn" aria-label="Toggle dark mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
   </div>
-  <nav class="tabs"><div class="inner"><a href="./">Home</a><a href="schedule.html">Schedule</a><a href="roster.html" class="on">Roster</a></div></nav>
+  <nav class="tabs"><div class="inner"><a href="./">Home</a><a href="schedule.html">Schedule</a><a href="roster.html" class="on">Roster</a><a href="photos.html" id="navPhotos" hidden>Photos</a></div></nav>
 </header>
 <main id="main">
 
-<a class="back" href="roster.html">&larr; Roster</a>
 <div id="content"><p class="empty">Loading…</p></div>
 
 </main>
 <footer class="footer" id="footer"></footer>
-<script src="shared.js?v=8"></script>
+<script src="shared.js?v=11"></script>
 <script>
-const VERSION = "1.7";
+const VERSION = "2.0";
 setFooter(VERSION);
 
 const id = new URLSearchParams(location.search).get("id");
 const GRADE = { "9": "Freshman", "10": "Sophomore", "11": "Junior", "12": "Senior" };
+const SIL = '<svg viewBox="0 0 100 120" class="wr-sil" aria-hidden="true"><circle cx="50" cy="42" r="22" fill="currentColor"/><path d="M8 120c2-28 20-44 42-44s40 16 42 44z" fill="currentColor"/></svg>';
+// Graduation year from grade, using the season's ending year (2026-27 -> 2027).
+const classYear = g => g ? String(Number(SITE.season.split("-")[0]) + 1 + (12 - Number(g))) : "";
 loadAll().then(data => {
   const w = data.wrestlerById[id];
   const el = document.getElementById("content");
-  if (!w) { el.innerHTML = '<p class="empty">Wrestler not found.</p>'; return; }
+  if (!w) { el.innerHTML = '<a class="back" href="roster.html">&larr; Roster</a><p class="empty">Wrestler not found.</p>'; return; }
   document.title = `${fullName(w)} | Wilson Memorial Wrestling`;
   const s = wrestlerStats(w.id, data.bouts);
-  let h = `<div class="card"><div class="wr-head"><div class="big">${esc(w.weight)}</div>
-    <div><h1>${esc(fullName(w))}</h1><div class="muted">${esc(GRADE[w.grade] || w.grade)}</div></div></div>
-    <div class="statgrid">
-      <div><b>${blank(s.W)}</b><span>Wins</span></div>
-      <div><b>${blank(s.L)}</b><span>Losses</span></div>
-      <div><b>${blank(s.F)}</b><span>Pins</span></div>
-      <div><b>${blank(s.TF)}</b><span>Tech Falls</span></div>
-    </div></div>`;
+  const pct = s.matches ? Math.round(100 * s.W / s.matches) + "%" : "";
+  const rec = s.matches ? `${s.W}-${s.L}` : "";
+  const how = [["F", "Fall"], ["TF", "Tech Fall"], ["MD", "Major"], ["D", "Decision"]]
+    .filter(([k]) => s[k]).map(([k, n]) => `${s[k]} ${n}`).join(" · ");
+  const wt = (w.weight || "").split("/")[0];
+  const photo = `<img src="photos/headshots/${encodeURIComponent(w.photo || "placeholder.jpg")}?v=1" alt="">`;
+
+  let h = `<article class="wr-card">
+    <header class="wr-hero">
+      <div class="wr-bg-num" aria-hidden="true">${esc(wt)}</div>
+      <div class="wr-top"><a href="roster.html">&larr; Roster</a><span class="wr-team"><img src="logos/hornet.png?v=2" alt="">Wilson Memorial</span></div>
+      <div class="wr-id">
+        <div class="wr-photo">${photo}</div>
+        <div class="wr-name">
+          <div class="wr-wt">${esc(w.weight)}<small>lbs</small></div>
+          <div class="wr-first">${esc(w.first)}</div>
+          <div class="wr-last${w.last.length > 9 ? " long" : ""}">${esc(w.last).replace(/-/g, "-<wbr>")}</div>
+          <span class="wr-chip">Varsity</span>
+        </div>
+      </div>
+    </header>
+    <section class="wr-sec">
+      <div class="wr-school"><img src="logos/wm.png" alt=""><div><small>High School</small><b>Wilson Memorial</b></div></div>
+      <div class="wr-tiles">
+        <div><small>Class</small><b>${esc(classYear(w.grade))}</b></div>
+        <div><small>Grade</small><b>${esc(GRADE[w.grade] || w.grade)}</b></div>
+        <div><small>Weight</small><b>${esc(w.weight)}<em>lbs</em></b></div>
+      </div>
+    </section>
+    <section class="wr-sec">
+      <h3 class="wr-h">This Season</h3>
+      <div class="wr-stats">
+        <div class="st-a"><b>${rec}</b><small>Record</small></div>
+        <div class="st-b"><b>${blank(s.F)}</b><small>Pins</small></div>
+        <div class="st-c"><b>${pct}</b><small>Win %</small></div>
+      </div>
+      ${how ? `<div class="wr-how">Wins: ${esc(how)}</div>` : ""}
+    </section>`;
+
   const bouts = data.bouts.filter(b => b.wrestler === w.id && isVisible(b))
     .map(b => ({ b, ev: data.eventById[b.event] || {} }))
     .sort((x, y) => (x.ev.date || "").localeCompare(y.ev.date || "") || Number(x.b.id) - Number(y.b.id));
-  if (bouts.length) {
-    h += `<h2 class="sec-title">Matches</h2><div class="card">` + bouts.map(({ b, ev }) => {
-      const ex = isYes(b.exhibition) ? ' <span class="tag">Exh.</span>' : "";
-      const opp = [b.opp_name, schoolShort(data, b.opp_school)].filter(Boolean).join(", ");
-      return `<div class="bout"><div class="wt">${esc(b.weight)}</div>
-        <div class="who"><div class="n">${opp ? "vs " + esc(opp) : "&nbsp;"}${ex}</div>
-        <div class="o"><a href="event.html?id=${encodeURIComponent(b.event)}">${esc(fmtDate(ev.date))} · ${esc(eventTitle(data, ev))}</a>${b.round ? " · " + esc(b.round) : ""}</div></div>
-        <div class="out"><b class="${b.result}">${esc(b.result)}</b>${esc(boutDetail(b))}</div></div>`;
-    }).join("") + `</div>`;
-  } else h += '<p class="empty">No matches yet this season.</p>';
+  h += `<section class="wr-sec"><h3 class="wr-h">Match Log</h3>`;
+  if (!bouts.length) h += '<p class="empty">No matches yet this season.</p>';
+  for (const { b, ev } of bouts) {
+    const d = parseDate(ev.date);
+    const ex = isYes(b.exhibition) ? '<span class="tag">Exh.</span> ' : "";
+    const sch = b.opp_school ? schoolShort(data, b.opp_school) : "";
+    const meet = eventTitle(data, ev);
+    h += `<div class="ml-row">
+      <div class="ml-date"><small>${d.toLocaleDateString("en-US", { month: "short" })}</small><b>${d.getDate()}</b></div>
+      <div class="ml-logo">${schoolLogo(data, b.opp_school) || ""}</div>
+      <div class="ml-main"><div class="ml-opp">vs ${esc(b.opp_name || sch || "Opponent")}${b.opp_name && sch ? `<span> · ${esc(sch)}</span>` : ""}</div>
+        <a class="ml-meet" href="event.html?id=${encodeURIComponent(b.event)}">${ex}${esc(meet)}${b.round ? " · " + esc(b.round) : ""}</a></div>
+      <div class="ml-res ${b.result}"><b>${esc(b.result)}</b><span>${esc(boutDetail(b))}</span></div>
+    </div>`;
+  }
+  h += `</section></article>`;
   el.innerHTML = h;
 }).catch(e => showError(document.getElementById("content"), e));
 

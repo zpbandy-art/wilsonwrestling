@@ -5,6 +5,8 @@ const SITE = {
   team: "Wilson Memorial",
   mascot: "Hornets",
   season: "2026-27",
+  // Photo gallery switch. false = Photos tab, gallery page and meet-page photo links are hidden.
+  photosEnabled: false,
 };
 
 /* ---------- CSV ---------- */
@@ -46,12 +48,13 @@ async function loadCSV(name, optional = false) {
 }
 
 async function loadAll() {
-  const [roster, events, bouts, venues, schools] = await Promise.all([
+  const [roster, events, bouts, venues, schools, photos] = await Promise.all([
     loadCSV("roster"), loadCSV("events"), loadCSV("bouts", true),
     loadCSV("venues", true), loadCSV("schools", true),
+    SITE.photosEnabled ? loadCSV("photos", true) : Promise.resolve([]),
   ]);
   const data = {
-    roster, events, bouts, venues, schools,
+    roster, events, bouts, venues, schools, photos,
     wrestlerById: Object.fromEntries(roster.map(w => [w.id, w])),
     eventById: Object.fromEntries(events.map(e => [e.id, e])),
     venueBySlug: Object.fromEntries(venues.map(v => [v.slug, v])),
@@ -209,6 +212,13 @@ function initTheme() {
   });
 }
 
+// Show the Photos tab only when the gallery is switched on.
+function initPhotosNav() {
+  const t = document.getElementById("navPhotos");
+  if (t && SITE.photosEnabled) t.hidden = false;
+}
+const photosFor = (data, eventId) => data.photos.filter(p => p.event === eventId && p.file);
+
 function setFooter(version) {
   const f = document.getElementById("footer");
   if (f) f.innerHTML = `${esc(SITE.team)} ${esc(SITE.mascot)} Wrestling &middot; ${esc(SITE.season)} &middot; v${esc(version)}`;
@@ -219,4 +229,4 @@ function showError(el, e) {
   el.innerHTML = `<p class="empty">Couldn't load data. Pull down to refresh.</p>`;
 }
 
-document.addEventListener("DOMContentLoaded", initTheme);
+document.addEventListener("DOMContentLoaded", () => { initTheme(); initPhotosNav(); });

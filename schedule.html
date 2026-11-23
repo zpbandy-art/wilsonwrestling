@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=8">
+<link rel="stylesheet" href="styles.css?v=11">
 </head>
 <body>
 <header class="top">
@@ -24,7 +24,7 @@
     <a class="brand" href="./"><img src="logos/hornet.png?v=2" alt=""><span>Wilson Memorial Wrestling</span></a>
     <button class="icon-btn" id="themeBtn" aria-label="Toggle dark mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
   </div>
-  <nav class="tabs"><div class="inner"><a href="./">Home</a><a href="schedule.html" class="on">Schedule</a><a href="roster.html">Roster</a></div></nav>
+  <nav class="tabs"><div class="inner"><a href="./">Home</a><a href="schedule.html" class="on">Schedule</a><a href="roster.html">Roster</a><a href="photos.html" id="navPhotos" hidden>Photos</a></div></nav>
 </header>
 <main id="main">
 
@@ -44,9 +44,9 @@
 
 </main>
 <footer class="footer" id="footer"></footer>
-<script src="shared.js?v=8"></script>
+<script src="shared.js?v=11"></script>
 <script>
-const VERSION = "1.7";
+const VERSION = "2.0";
 setFooter(VERSION);
 
 function evRow(data, ev) {

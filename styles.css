@@ -301,3 +301,5 @@ table.stats tr.dim td { color: var(--muted); }
 .ros-ic { font: 700 15px "Barlow Condensed", sans-serif; letter-spacing: .02em; }
 .ros-gr { flex: none; min-width: 40px; text-align: center; padding: 3px 8px; border-radius: 6px; background: var(--chip); border: 1px solid var(--line);
   font: 600 12px "Barlow Condensed", sans-serif; letter-spacing: .06em; color: var(--muted); }
+.flo-btn { display: block; margin-top: 10px; text-align: center; background: var(--green); color: #fff; text-decoration: none; font-weight: 600; font-size: 14px; padding: 10px 12px; border-radius: 999px; border: 2px solid var(--yellow); }
+.flo-btn + .field-btn { margin-top: 8px; }

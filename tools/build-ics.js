@@ -106,6 +106,7 @@ for (const ev of events) {
   if (multi && ev.time) notes.push(`Starts ${fmt12(ev.time)} on day 1.`);
   if (!ev.time) notes.push("Start time TBA.");
   if (ev.notes) notes.push(ev.notes);
+  if (/^https:\/\/(www\.)?(flowrestling\.org|trackwrestling\.com)\//.test(ev.flo || "")) notes.push(`Brackets & live results: ${ev.flo}`);
   notes.push(`Details and results: ${url}`);
 
   L.push("BEGIN:VEVENT", `UID:wilsonwrestling-event-${ev.id}@zpbandy-art.github.io`, `DTSTAMP:${now}`);

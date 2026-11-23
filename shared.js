@@ -137,7 +137,7 @@ const schoolShort = (data, slug) => {
 
 // School logo tile (white tile so dark logos survive dark mode). Empty if no logo.
 function schoolLogo(data, slug, cls = "crest") {
-  if (slug === "wilson") return `<img class="${cls}" src="logos/hornet.png" alt="">`;
+  if (slug === "wilson") return `<img class="${cls}" src="logos/hornet.png?v=2" alt="">`;
   const s = data.schoolBySlug[slug];
   return s && isYes(s.logo) ? `<img class="${cls}" src="logos/${encodeURIComponent(slug)}.png" alt="">` : "";
 }

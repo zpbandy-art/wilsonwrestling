@@ -274,3 +274,30 @@ table.stats tr.dim td { color: var(--muted); }
 .ml-res span { font-size: 11px; white-space: nowrap; }
 .ml-res.W { background: #1f7a4d; border-color: #1f7a4d; color: #fff; }
 .ml-res.L { color: var(--muted); }
+
+/* Roster list (modeled on the soccer roster) */
+.ros-card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.ros-head { display: flex; align-items: center; gap: 14px; padding: 16px; color: #fff;
+  background: linear-gradient(160deg, #2f4d41 0%, #233B32 55%, #18291f 100%); border-bottom: 4px solid var(--yellow); }
+.ros-logo { width: 58px; height: 58px; flex: none; background: #fff; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+.ros-logo img { width: 48px; height: 48px; object-fit: contain; }
+.ros-head small { display: block; font: 600 11px "Barlow Condensed", sans-serif; letter-spacing: .08em; text-transform: uppercase; color: #cfd9d4; }
+.ros-head h1 { margin: 0; font: 700 28px/1.05 "Barlow Condensed", sans-serif; }
+.ros-head a { color: #dfe7e3; text-decoration: none; font-size: 13px; font-weight: 600; }
+.ros-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-top: 1px solid var(--line); text-decoration: none; color: inherit; }
+.ros-row:first-child { border-top: 0; }
+.ros-row:active { background: var(--chip); }
+.ros-wt { width: 44px; height: 38px; flex: none; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  font: 700 18px "Barlow Condensed", sans-serif; background: #233B32; color: #fff; }
+.ros-wt.alt { background: var(--yellow); color: #1c1c1c; }
+:root[data-theme="dark"] .ros-wt:not(.alt) { background: #2f6b47; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .ros-wt:not(.alt) { background: #2f6b47; } }
+.ros-name { flex: 1; min-width: 0; }
+.ros-name b { display: block; font-weight: 600; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ros-name small { font-size: 12px; color: var(--muted); }
+.ros-ic { width: 36px; height: 36px; flex: none; border: 2px solid #2f6b47; color: #2f6b47; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+:root[data-theme="dark"] .ros-ic { border-color: var(--yellow); color: var(--yellow); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .ros-ic { border-color: var(--yellow); color: var(--yellow); } }
+.ros-ic { font: 700 15px "Barlow Condensed", sans-serif; letter-spacing: .02em; }
+.ros-gr { flex: none; min-width: 40px; text-align: center; padding: 3px 8px; border-radius: 6px; background: var(--chip); border: 1px solid var(--line);
+  font: 600 12px "Barlow Condensed", sans-serif; letter-spacing: .06em; color: var(--muted); }

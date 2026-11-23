@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=11">
+<link rel="stylesheet" href="styles.css?v=13">
 </head>
 <body>
 <header class="top">
@@ -28,28 +28,39 @@
 </header>
 <main id="main">
 
-<div class="card" id="list"><p class="empty">Loading…</p></div>
+<article class="ros-card">
+  <header class="ros-head">
+    <div class="ros-logo"><img src="logos/hornet.png?v=2" alt=""></div>
+    <div><small>Wilson Memorial Hornets</small><h1>Team Roster</h1><a href="./">&larr; Home</a></div>
+  </header>
+  <div id="list"><p class="empty">Loading…</p></div>
+</article>
 
 </main>
 <footer class="footer" id="footer"></footer>
-<script src="shared.js?v=11"></script>
+<script src="shared.js?v=13"></script>
 <script>
-const VERSION = "2.0";
+const VERSION = "2.2";
 setFooter(VERSION);
 
-const GRADE = { "9": "Fr", "10": "So", "11": "Jr", "12": "Sr" };
+const GR = { "9": "FR", "10": "SO", "11": "JR", "12": "SR" };
+// Short graduation year from grade, e.g. grade 10 in 2026-27 -> '29
+const yr2 = g => g ? "\u2019" + String(Number(SITE.season.split("-")[0]) + 1 + (12 - Number(g))).slice(-2) : "";
 loadAll().then(data => {
   const ws = data.roster.filter(w => !/^(n|no|false|0)$/i.test(w.active || ""))
     .sort((a, b) => (parseFloat(a.weight) - parseFloat(b.weight)) || a.last.localeCompare(b.last));
   const el = document.getElementById("list");
   if (!ws.length) { el.innerHTML = '<p class="empty">Roster coming soon.</p>'; return; }
-  el.innerHTML = `<table class="stats"><thead><tr><th>Wt</th><th class="l">Wrestler</th><th>Gr</th><th>W</th><th>L</th><th>Pins</th></tr></thead><tbody>` +
-    ws.map(w => {
-      const s = wrestlerStats(w.id, data.bouts);
-      return `<tr><td class="wt">${esc(w.weight)}</td>
-        <td class="l name"><a href="wrestler.html?id=${encodeURIComponent(w.id)}">${esc(fullName(w))}</a></td>
-        <td>${esc(GRADE[w.grade] || w.grade)}</td><td>${blank(s.W)}</td><td>${blank(s.L)}</td><td>${blank(s.F)}</td></tr>`;
-    }).join("") + `</tbody></table>`;
+  el.innerHTML = ws.map((w, i) => {
+    const s = wrestlerStats(w.id, data.bouts);
+    const rec = s.matches ? `${s.W}-${s.L}${s.F ? ` · ${s.F} pin${s.F > 1 ? "s" : ""}` : ""}` : "";
+    return `<a class="ros-row" href="wrestler.html?id=${encodeURIComponent(w.id)}">
+      <span class="ros-wt ${i % 2 ? "alt" : ""}">${esc(w.weight)}</span>
+      <span class="ros-name"><b>${esc(fullName(w))}</b>${rec ? `<small>${esc(rec)}</small>` : ""}</span>
+      <span class="ros-ic" title="Class of ${esc(String(Number(SITE.season.split("-")[0]) + 1 + (12 - Number(w.grade))))}">${esc(yr2(w.grade))}</span>
+      <span class="ros-gr">${esc(GR[w.grade] || w.grade)}</span>
+    </a>`;
+  }).join("");
 }).catch(e => showError(document.getElementById("list"), e));
 
 </script>

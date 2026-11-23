@@ -1,0 +1,14 @@
+{
+  "name": "Wilson Memorial Hornets Wrestling",
+  "short_name": "WM Wrestling",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#233B32",
+  "theme_color": "#233B32",
+  "icons": [
+    { "src": "wm-icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "wm-icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "wm-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

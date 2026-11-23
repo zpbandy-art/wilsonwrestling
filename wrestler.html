@@ -53,7 +53,7 @@ loadAll().then(data => {
   const how = [["F", "Fall"], ["TF", "Tech Fall"], ["MD", "Major"], ["D", "Decision"]]
     .filter(([k]) => s[k]).map(([k, n]) => `${s[k]} ${n}`).join(" · ");
   const wt = (w.weight || "").split("/")[0];
-  const photo = `<img src="photos/headshots/${encodeURIComponent(w.photo || "placeholder.jpg")}?v=1" alt="">`;
+  const photo = `<img src="photos/headshots/${encodeURIComponent(w.photo || "placeholder.jpg")}?v=3" alt="">`;
 
   let h = `<article class="wr-card">
     <header class="wr-hero">

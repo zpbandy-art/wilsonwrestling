@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wrestler | Wilson Memorial Wrestling</title>
+<meta name="description" content="Wilson Memorial Hornets varsity wrestling: schedule, results, and roster.">
+<meta name="theme-color" content="#233B32">
+<meta property="og:title" content="Wrestler | Wilson Memorial Wrestling">
+<meta property="og:description" content="Wilson Memorial Hornets varsity wrestling: schedule, results, and roster.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://zpbandy-art.github.io/wilsonwrestling/preview.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=7">
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <a class="brand" href="./"><img src="logos/hornet.png" alt=""><span>Wilson Memorial Wrestling</span></a>
+    <button class="icon-btn" id="themeBtn" aria-label="Toggle dark mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+  </div>
+  <nav class="tabs"><div class="inner"><a href="./">Home</a><a href="schedule.html">Schedule</a><a href="roster.html" class="on">Roster</a></div></nav>
+</header>
+<main id="main">
+
+<a class="back" href="roster.html">&larr; Roster</a>
+<div id="content"><p class="empty">Loading…</p></div>
+
+</main>
+<footer class="footer" id="footer"></footer>
+<script src="shared.js?v=7"></script>
+<script>
+const VERSION = "1.6";
+setFooter(VERSION);
+
+const id = new URLSearchParams(location.search).get("id");
+const GRADE = { "9": "Freshman", "10": "Sophomore", "11": "Junior", "12": "Senior" };
+loadAll().then(data => {
+  const w = data.wrestlerById[id];
+  const el = document.getElementById("content");
+  if (!w) { el.innerHTML = '<p class="empty">Wrestler not found.</p>'; return; }
+  document.title = `${fullName(w)} | Wilson Memorial Wrestling`;
+  const s = wrestlerStats(w.id, data.bouts);
+  let h = `<div class="card"><div class="wr-head"><div class="big">${esc(w.weight)}</div>
+    <div><h1>${esc(fullName(w))}</h1><div class="muted">${esc(GRADE[w.grade] || w.grade)}</div></div></div>
+    <div class="statgrid">
+      <div><b>${blank(s.W)}</b><span>Wins</span></div>
+      <div><b>${blank(s.L)}</b><span>Losses</span></div>
+      <div><b>${blank(s.F)}</b><span>Pins</span></div>
+      <div><b>${blank(s.TF)}</b><span>Tech Falls</span></div>
+    </div></div>`;
+  const bouts = data.bouts.filter(b => b.wrestler === w.id && isVisible(b))
+    .map(b => ({ b, ev: data.eventById[b.event] || {} }))
+    .sort((x, y) => (x.ev.date || "").localeCompare(y.ev.date || "") || Number(x.b.id) - Number(y.b.id));
+  if (bouts.length) {
+    h += `<h2 class="sec-title">Matches</h2><div class="card">` + bouts.map(({ b, ev }) => {
+      const ex = isYes(b.exhibition) ? ' <span class="tag">Exh.</span>' : "";
+      const opp = [b.opp_name, schoolShort(data, b.opp_school)].filter(Boolean).join(", ");
+      return `<div class="bout"><div class="wt">${esc(b.weight)}</div>
+        <div class="who"><div class="n">${opp ? "vs " + esc(opp) : "&nbsp;"}${ex}</div>
+        <div class="o"><a href="event.html?id=${encodeURIComponent(b.event)}">${esc(fmtDate(ev.date))} · ${esc(eventTitle(data, ev))}</a>${b.round ? " · " + esc(b.round) : ""}</div></div>
+        <div class="out"><b class="${b.result}">${esc(b.result)}</b>${esc(boutDetail(b))}</div></div>`;
+    }).join("") + `</div>`;
+  } else h += '<p class="empty">No matches yet this season.</p>';
+  el.innerHTML = h;
+}).catch(e => showError(document.getElementById("content"), e));
+
+</script>
+</body>
+</html>

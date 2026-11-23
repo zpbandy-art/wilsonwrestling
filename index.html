@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wilson Memorial Hornets Wrestling</title>
+<meta name="description" content="Wilson Memorial Hornets varsity wrestling: schedule, results, and roster.">
+<meta name="theme-color" content="#233B32">
+<meta property="og:title" content="Wilson Memorial Hornets Wrestling">
+<meta property="og:description" content="Wilson Memorial Hornets varsity wrestling: schedule, results, and roster.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://zpbandy-art.github.io/wilsonwrestling/preview.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=7">
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <a class="brand" href="./"><img src="logos/hornet.png" alt=""><span>Wilson Memorial Wrestling</span></a>
+    <button class="icon-btn" id="themeBtn" aria-label="Toggle dark mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+  </div>
+  <nav class="tabs"><div class="inner"><a href="./" class="on">Home</a><a href="schedule.html">Schedule</a><a href="roster.html">Roster</a></div></nav>
+</header>
+<main id="main">
+
+<section class="hero">
+  <img src="logos/hornet.png" alt="Hornet logo">
+  <div>
+    <div class="sub">Varsity Wrestling &middot; <span id="season"></span></div>
+    <h1>Wilson Memorial Hornets</h1>
+    <div class="rec" id="rec"></div>
+  </div>
+</section>
+<div id="content"><p class="empty">Loading…</p></div>
+
+</main>
+<footer class="footer" id="footer"></footer>
+<script src="shared.js?v=7"></script>
+<script>
+const VERSION = "1.6";
+setFooter(VERSION);
+
+function evRow(data, ev) {
+  const d = parseDate(ev.date);
+  const m = d.toLocaleDateString("en-US", { month: "short" });
+  const dw = d.toLocaleDateString("en-US", { weekday: "short" }) +
+    (ev.end_date && ev.end_date !== ev.date ? "–" + parseDate(ev.end_date).toLocaleDateString("en-US", { weekday: "short" }) : "");
+  let res = "";
+  const scores = dualScores(ev, data.bouts).filter(s => s.played);
+  if (scores.length && ev.type === "duals") {
+    const w = scores.filter(s => s.us > s.them).length, l = scores.filter(s => s.us < s.them).length;
+    res = `<div>${w}-${l}</div>${ev.team_place ? `<div class="muted" style="font-size:14px">${esc(ev.team_place)}</div>` : ""}`;
+  } else if (scores.length) {
+    res = scores.map(s => {
+      const wl = s.us > s.them ? "W" : s.us < s.them ? "L" : "T";
+      return `<div class="${wl}">${wl} ${s.us}-${s.them}</div>`;
+    }).join("");
+  } else if (ev.team_place) {
+    res = `<div>${esc(ev.team_place)}</div>`;
+  }
+  const meta = [dw, fmtTime(ev.time) || "Time TBA", venueName(data, ev)].filter(Boolean).join(" · ");
+  const tag = isHome(data, ev) ? ' <span class="tag home">Home</span>' :
+              ev.type === "tournament" ? ' <span class="tag">Tourn.</span>' :
+              ev.type === "duals" ? ' <span class="tag">Duals</span>' : "";
+  return `<a class="ev" href="event.html?id=${encodeURIComponent(ev.id)}">
+    <div class="date"><div class="m">${m}</div><div class="d${ev.end_date && ev.end_date !== ev.date ? " rng" : ""}">${d.getDate()}${ev.end_date && ev.end_date !== ev.date ? "–" + parseDate(ev.end_date).getDate() : ""}</div></div>
+    <div class="info"><div class="title">${esc(eventTitle(data, ev))}${tag}</div><div class="meta">${esc(meta)}</div></div>
+    <div class="res">${res}</div></a>`;
+}
+function isDone(data, ev) {
+  return eventEnd(ev) < todayISO() || data.bouts.some(b => b.event === ev.id) || !!ev.team_place;
+}
+
+document.getElementById("season").textContent = SITE.season;
+loadAll().then(data => {
+  const r = teamRecord(data);
+  if (r.W + r.L + r.T) document.getElementById("rec").innerHTML =
+    `${r.W}-${r.L}${r.T ? "-" + r.T : ""}<small>dual record</small>`;
+  const upcoming = data.events.filter(e => !isDone(data, e)).slice(0, 3);
+  const recent = data.events.filter(e => isDone(data, e)).slice(-3).reverse();
+  let h = "";
+  h += `<div class="card"><h2>Next Up</h2>${upcoming.length ? upcoming.map(e => evRow(data, e)).join("") : '<p class="empty">No upcoming meets posted yet.</p>'}</div>`;
+  if (recent.length) h += `<div class="card"><h2>Latest Results</h2>${recent.map(e => evRow(data, e)).join("")}</div>`;
+  document.getElementById("content").innerHTML = h;
+}).catch(e => showError(document.getElementById("content"), e));
+
+</script>
+</body>
+</html>

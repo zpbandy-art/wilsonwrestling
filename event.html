@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Meet | Wilson Memorial Wrestling</title>
+<meta name="description" content="Wilson Memorial Hornets varsity wrestling: schedule, results, and roster.">
+<meta name="theme-color" content="#233B32">
+<meta property="og:title" content="Meet | Wilson Memorial Wrestling">
+<meta property="og:description" content="Wilson Memorial Hornets varsity wrestling: schedule, results, and roster.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://zpbandy-art.github.io/wilsonwrestling/preview.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=7">
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <a class="brand" href="./"><img src="logos/hornet.png" alt=""><span>Wilson Memorial Wrestling</span></a>
+    <button class="icon-btn" id="themeBtn" aria-label="Toggle dark mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+  </div>
+  <nav class="tabs"><div class="inner"><a href="./">Home</a><a href="schedule.html" class="on">Schedule</a><a href="roster.html">Roster</a></div></nav>
+</header>
+<main id="main">
+
+<a class="back" href="schedule.html">&larr; Schedule</a>
+<div id="content"><p class="empty">Loading…</p></div>
+<dialog id="fieldDlg" class="dlg"><div class="dlg-in">
+  <div class="dlg-head"><h2 id="fieldTitle">Teams</h2><button class="dlg-close" aria-label="Close">&times;</button></div>
+  <ul class="field-list" id="fieldList"></ul>
+</div></dialog>
+
+</main>
+<footer class="footer" id="footer"></footer>
+<script src="shared.js?v=7"></script>
+<script>
+const VERSION = "1.6";
+setFooter(VERSION);
+
+const id = new URLSearchParams(location.search).get("id");
+function boutRow(data, b, showOpp) {
+  const w = data.wrestlerById[b.wrestler];
+  const opp = [b.opp_name, showOpp ? schoolShort(data, b.opp_school) : ""].filter(Boolean).join(", ");
+  const ex = isYes(b.exhibition) ? ' <span class="tag">Exh.</span>' : "";
+  const rd = b.round ? `<div class="o">${esc(b.round)}</div>` : "";
+  return `<div class="bout"><div class="wt">${esc(b.weight)}</div>
+    <div class="who"><div class="n"><a href="wrestler.html?id=${encodeURIComponent(b.wrestler)}">${esc(fullName(w) || b.wrestler)}</a>${ex}</div>
+    <div class="o">${opp ? "vs " + esc(opp) : ""}</div>${rd}</div>
+    <div class="out"><b class="${b.result}">${esc(b.result)}</b>${esc(boutDetail(b))}</div></div>`;
+}
+loadAll().then(data => {
+  const ev = data.eventById[id];
+  const el = document.getElementById("content");
+  if (!ev) { el.innerHTML = '<p class="empty">Meet not found.</p>'; return; }
+  const title = eventTitle(data, ev);
+  document.title = `${title} | Wilson Memorial Wrestling`;
+  const v = data.venueBySlug[ev.venue] || {};
+  const where = [v.name || ev.venue, v.address].filter(Boolean).join(" · ");
+  const field = eventField(ev);
+  let h = `<div class="card"><h2>${esc(title)}</h2>
+    <div>${esc(fmtDateRange(ev, { weekday: "long", month: "long", day: "numeric" }))}${" · " + esc(fmtTime(ev.time) || "Time TBA")}</div>
+    ${v.name || ev.venue ? `<div class="muted">${esc(v.name || ev.venue)}</div>` : ""}
+    ${v.address ? `<a class="map-link" href="https://maps.google.com/?q=${encodeURIComponent(v.address)}" target="_blank" rel="noopener">${esc(v.address)} &#8599;</a>` : ""}
+    ${ev.team_place ? `<div style="margin-top:6px"><b>Team finish:</b> ${esc(ev.team_place)}</div>` : ""}
+    ${field.length > 1 ? `<button class="field-btn" id="fieldBtn">${field.length + 1} teams attending &rsaquo;</button>` : ""}
+  </div>`;
+  const bouts = data.bouts.filter(b => b.event === ev.id && isVisible(b));
+  const byWeight = (a, b) => (Number(a.weight) - Number(b.weight)) || (Number(a.id) - Number(b.id));
+  if (isDualType(ev)) {
+    for (const s of dualScores(ev, data.bouts)) {
+      const list = bouts.filter(b => b.opp_school === s.opp).sort(byWeight);
+      if (!s.played && !list.length) continue;
+      const wl = s.us > s.them ? "W" : s.us < s.them ? "L" : "";
+      h += `<div class="card"><div class="score-line"><span class="sch">${schoolLogo(data, "wilson")}Wilson Memorial</span><span class="${wl}">${s.us}</span></div>
+        <div class="score-line"><span class="sch">${schoolLogo(data, s.opp)}${esc(schoolName(data, s.opp))}</span><span>${s.them}</span></div></div>`;
+      if (list.length) h += `<div class="card">${list.map(b => boutRow(data, b, false)).join("")}</div>`;
+    }
+    const other = bouts.filter(b => !eventOpponents(ev, data.bouts).includes(b.opp_school)).sort(byWeight);
+    if (other.length) h += `<div class="card">${other.map(b => boutRow(data, b, true)).join("")}</div>`;
+  } else if (bouts.length) {
+    // Tournament: group by wrestler, bouts in entry order.
+    const order = [];
+    for (const b of bouts) if (!order.includes(b.wrestler)) order.push(b.wrestler);
+    order.sort((a, b) => (parseFloat((data.wrestlerById[a] || {}).weight) || 999) - (parseFloat((data.wrestlerById[b] || {}).weight) || 999));
+    for (const wid of order) {
+      const list = bouts.filter(b => b.wrestler === wid).sort((a, b) => Number(a.id) - Number(b.id));
+      h += `<div class="card">${list.map(b => boutRow(data, b, true)).join("")}</div>`;
+    }
+  }
+  if (!bouts.length && !ev.team_place && eventEnd(ev) >= todayISO()) h += '<p class="empty">Results will be posted after the meet.</p>';
+  el.innerHTML = h;
+  if (field.length > 1) {
+    const dlg = document.getElementById("fieldDlg");
+    const host = (data.venueBySlug[ev.venue] || {}).school || "";
+    const names = field.map(s => ({ s, n: schoolName(data, s) })).sort((a, b) => a.n.localeCompare(b.n));
+    document.getElementById("fieldList").innerHTML =
+      `<li class="us">${schoolLogo(data, "wilson")}<span>Wilson Memorial</span></li>` +
+      names.map(x => `<li>${schoolLogo(data, x.s)}<span>${esc(x.n)}${x.s === host ? ' <span class="tag">Host</span>' : ""}</span></li>`).join("");
+    document.getElementById("fieldTitle").textContent = `${field.length + 1} Teams`;
+    document.getElementById("fieldBtn").addEventListener("click", () => dlg.showModal());
+    dlg.addEventListener("click", e => { if (e.target === dlg || e.target.closest(".dlg-close")) dlg.close(); });
+  }
+}).catch(e => showError(document.getElementById("content"), e));
+
+</script>
+</body>
+</html>

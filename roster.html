@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Roster | Wilson Memorial Wrestling</title>
+<meta name="description" content="Wilson Memorial Hornets varsity wrestling: schedule, results, and roster.">
+<meta name="theme-color" content="#233B32">
+<meta property="og:title" content="Roster | Wilson Memorial Wrestling">
+<meta property="og:description" content="Wilson Memorial Hornets varsity wrestling: schedule, results, and roster.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://zpbandy-art.github.io/wilsonwrestling/preview.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=7">
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <a class="brand" href="./"><img src="logos/hornet.png" alt=""><span>Wilson Memorial Wrestling</span></a>
+    <button class="icon-btn" id="themeBtn" aria-label="Toggle dark mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+  </div>
+  <nav class="tabs"><div class="inner"><a href="./">Home</a><a href="schedule.html">Schedule</a><a href="roster.html" class="on">Roster</a></div></nav>
+</header>
+<main id="main">
+
+<div class="card" id="list"><p class="empty">Loading…</p></div>
+
+</main>
+<footer class="footer" id="footer"></footer>
+<script src="shared.js?v=7"></script>
+<script>
+const VERSION = "1.6";
+setFooter(VERSION);
+
+const GRADE = { "9": "Fr", "10": "So", "11": "Jr", "12": "Sr" };
+loadAll().then(data => {
+  const ws = data.roster.filter(w => !/^(n|no|false|0)$/i.test(w.active || ""))
+    .sort((a, b) => (parseFloat(a.weight) - parseFloat(b.weight)) || a.last.localeCompare(b.last));
+  const el = document.getElementById("list");
+  if (!ws.length) { el.innerHTML = '<p class="empty">Roster coming soon.</p>'; return; }
+  el.innerHTML = `<table class="stats"><thead><tr><th>Wt</th><th class="l">Wrestler</th><th>Gr</th><th>W</th><th>L</th><th>Pins</th></tr></thead><tbody>` +
+    ws.map(w => {
+      const s = wrestlerStats(w.id, data.bouts);
+      return `<tr><td class="wt">${esc(w.weight)}</td>
+        <td class="l name"><a href="wrestler.html?id=${encodeURIComponent(w.id)}">${esc(fullName(w))}</a></td>
+        <td>${esc(GRADE[w.grade] || w.grade)}</td><td>${blank(s.W)}</td><td>${blank(s.L)}</td><td>${blank(s.F)}</td></tr>`;
+    }).join("") + `</tbody></table>`;
+}).catch(e => showError(document.getElementById("list"), e));
+
+</script>
+</body>
+</html>
